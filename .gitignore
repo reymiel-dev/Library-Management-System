@@ -1,0 +1,8 @@
+.idea/
+.vscode/
+*.iml
+bin/
+out/
+target/
+*.class
+.DS_Store
