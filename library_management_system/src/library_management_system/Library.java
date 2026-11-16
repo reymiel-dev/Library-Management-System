@@ -40,24 +40,22 @@ public class Library implements Serializable {
         return new ArrayList<>(loans);
     }
 
-    public void addItem(LibraryItem item) {
+    public String addItem(LibraryItem item) {
         if (item == null || findItem(item.getItemId()) != null) {
-            System.out.println("Invalid item or duplicate ID.");
-            return;
+            return "Invalid item or duplicate ID.";
         }
 
         items.add(item);
-        System.out.println("Item added successfully.");
+        return "Item added successfully.";
     }
 
-    public void registerMember(Member member) {
+    public String registerMember(Member member) {
         if (member == null || findMember(member.getMemberId()) != null) {
-            System.out.println("Invalid member or duplicate ID.");
-            return;
+            return "Invalid member or duplicate ID.";
         }
 
         members.add(member);
-        System.out.println("Member registered successfully.");
+        return "Member registered successfully.";
     }
 
     public LibraryItem findItem(String id) {
@@ -138,47 +136,41 @@ public class Library implements Serializable {
         return countActiveLoans(memberId) > 0;
     }
 
-    public void borrowItem(String memberId, String itemId) {
+    public String borrowItem(String memberId, String itemId) {
 
         Member member = findMember(memberId);
         LibraryItem item = findItem(itemId);
 
         if (member == null || item == null) {
-            System.out.println("Member or item not found.");
-            return;
+            return "Member or item not found.";
         }
 
         if (!member.isActive()) {
-            System.out.println("Account is inactive.");
-            return;
+            return "Account is inactive.";
         }
 
         if (member.getUnpaidFines() > 0) {
-            System.out.println("Pay unpaid fines before borrowing.");
-            return;
+            return "Pay unpaid fines before borrowing.";
         }
 
         if (countActiveLoans(memberId) >=
                 member.getMembershipType().getBorrowingLimit()) {
 
-            System.out.println("Borrowing limit reached.");
-            return;
+            return "Borrowing limit reached.";
         }
 
         if (!item.isAvailable()) {
-            System.out.println("No available copies.");
-            return;
+            return "No available copies.";
         }
 
         item.borrowCopy();
         loans.add(new Loan(memberId, itemId));
 
-        System.out.println("Item borrowed successfully.");
-        System.out.println("Due Date: " +
-                java.time.LocalDate.now().plusDays(14));
+        return "Item borrowed successfully. \nDue Date: " +
+                java.time.LocalDate.now().plusDays(14);
     }
 
-    public void returnItem(String memberId, String itemId) {
+    public String returnItem(String memberId, String itemId) {
 
         for (Loan loan : loans) {
 
@@ -190,8 +182,7 @@ public class Library implements Serializable {
                 Member member = findMember(memberId);
 
                 if (item == null || member == null) {
-                    System.out.println("Record not found.");
-                    return;
+                    return "Record not found.";
                 }
 
                 loan.completeReturn();
@@ -200,32 +191,29 @@ public class Library implements Serializable {
                 double fine = loan.calculateFine();
                 member.addFine(fine);
 
-                System.out.println("Item returned successfully.");
                 System.out.printf("Fine: PHP %.2f%n", fine);
 
-                return;
+                return "Item returned successfully." + String.format("Fine: PHP %.2f%n", fine);
             }
         }
 
-        System.out.println("Active loan not found.");
+        return "Active loan not found.";
     }
 
-    public void removeItem(String itemId) {
+    public String removeItem(String itemId) {
 
         LibraryItem item = findItem(itemId);
 
         if (item == null) {
-            System.out.println("Item not found.");
-            return;
+            return "Item not found.";
         }
 
         if (hasActiveLoanForItem(itemId)) {
-            System.out.println("Item has active loans.");
-            return;
+            return "Item has active loans.";
         }
 
         items.remove(item);
-        System.out.println("Item removed successfully.");
+        return "Item removed successfully.";
     }
 
     public void deleteMember(String memberId) {

@@ -6,3 +6,4 @@ out/
 target/
 *.class
 .DS_Store
+library_data.ser
