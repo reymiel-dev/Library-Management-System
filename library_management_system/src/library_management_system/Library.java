@@ -78,34 +78,28 @@ public class Library implements Serializable {
         return null;
     }
 
-    public void searchItems(String keyword) {
-        boolean found = false;
+    public ArrayList<LibraryItem> searchItems(String keyword) {
+        ArrayList<LibraryItem> results = new ArrayList<>();
+        String key = keyword.toLowerCase();
 
         for (LibraryItem item : items) {
-            boolean matches = item.getTitle().toLowerCase()
-                    .contains(keyword.toLowerCase());
+            boolean matches = item.getTitle().toLowerCase().contains(key);
 
             if (item instanceof Book) {
                 Book book = (Book) item;
 
                 matches = matches
-                        || book.getAuthor().toLowerCase()
-                        .contains(keyword.toLowerCase())
-                        || book.getIsbn().toLowerCase()
-                        .contains(keyword.toLowerCase())
-                        || book.getCategory().toLowerCase()
-                        .contains(keyword.toLowerCase());
+                        || book.getAuthor().toLowerCase().contains(key)
+                        || book.getIsbn().toLowerCase().contains(key)
+                        || book.getCategory().toLowerCase().contains(key);
             }
 
             if (matches) {
-                item.displayItem();
-                found = true;
+                results.add(item);
             }
         }
 
-        if (!found) {
-            System.out.println("No matching items found.");
-        }
+        return results;
     }
 
     public int countActiveLoans(String memberId) {
@@ -288,7 +282,7 @@ public class Library implements Serializable {
         }
     }
 
-    public void displayStatistics() {
+    public String getStatistics() {
 
         int books = 0;
         int magazines = 0;
@@ -319,16 +313,14 @@ public class Library implements Serializable {
             }
         }
 
-        System.out.println("\n===== LIBRARY STATISTICS =====");
-        System.out.println("Library: " + libraryName);
-        System.out.println("Books: " + books);
-        System.out.println("Magazines: " + magazines);
-        System.out.println("Members: " + members.size());
-        System.out.println("Total Copies: " + totalCopies);
-        System.out.println("Available Copies: " + availableCopies);
-        System.out.println("Borrowed Copies: " +
-                (totalCopies - availableCopies));
-        System.out.println("Active Loans: " + activeLoans);
-        System.out.println("Overdue Loans: " + overdueLoans);
+        return "Library: " + libraryName
+              + "\nBooks: " + books
+              + "Magazines: " + magazines
+              + "Members: " + members.size()
+              + "Total Copies: " + totalCopies
+              + "Available Copies: " + availableCopies
+              + "Borrowed Copies: " + (totalCopies - availableCopies)
+              + "Active Loans: " + activeLoans
+              + "Overdue Loans: " + overdueLoans;
     }
 }
