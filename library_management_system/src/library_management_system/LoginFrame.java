@@ -32,7 +32,8 @@ public class LoginFrame extends JFrame{
 
         if (roleBox.getSelectedItem().equals("Admin")) {
             if (id.equals("admin") && pass.equals("admin123")) {
-                JOptionPane.showMessageDialog(this, "Admin Login OK");
+                new AdminFrame(library).setVisible(true);
+                dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Wrong admin login.");
             }
@@ -45,7 +46,8 @@ public class LoginFrame extends JFrame{
             } else if (!m.isActive()) {
                 JOptionPane.showConfirmDialog(this, "Your account is inactive.");
             } else {
-                JOptionPane.showMessageDialog(this, "Welcome, " + m.getName());
+                new MemberFrame(library, m).setVisible(true);
+                dispose();
             }
         }
     }
