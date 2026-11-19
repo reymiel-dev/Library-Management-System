@@ -37,6 +37,18 @@ public class Loan implements Serializable {
         return dueDate;
     }
 
+    public LocalDate getBorrowDate() {
+        return borrowDate;
+    }
+
+    public LocalDate getReturnDate() {
+        return returnDate;
+    }
+
+    public double getFine() {
+        return isReturned() ? fine : calculateFine();
+    }
+
     public boolean isReturned() {
         return returnDate != null;
     }

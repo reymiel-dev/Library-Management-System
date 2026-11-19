@@ -187,7 +187,7 @@ public class Library implements Serializable {
 
                 System.out.printf("Fine: PHP %.2f%n", fine);
 
-                return "Item returned successfully." + String.format("Fine: PHP %.2f%n", fine);
+                return "Item returned successfully.\n" + String.format("Fine: PHP %.2f", fine);
             }
         }
 
@@ -208,6 +208,22 @@ public class Library implements Serializable {
 
         items.remove(item);
         return "Item removed successfully.";
+    }
+
+    public String removeMember(String memberId) {
+
+        Member member = findMember(memberId);
+
+        if (member == null) {
+            return "Member not found.";
+        }
+
+        if (hasActiveLoansForMember(memberId)) {
+            return "Member has active loans. Return all borrowed items first.";
+        }
+
+        members.remove(member);
+        return "Member deleted successfully.";
     }
 
     public void deleteMember(String memberId) {
@@ -315,12 +331,12 @@ public class Library implements Serializable {
 
         return "Library: " + libraryName
               + "\nBooks: " + books
-              + "Magazines: " + magazines
-              + "Members: " + members.size()
-              + "Total Copies: " + totalCopies
-              + "Available Copies: " + availableCopies
-              + "Borrowed Copies: " + (totalCopies - availableCopies)
-              + "Active Loans: " + activeLoans
-              + "Overdue Loans: " + overdueLoans;
+              + "\nMagazines: " + magazines
+              + "\nMembers: " + members.size()
+              + "\nTotal Copies: " + totalCopies
+              + "\nAvailable Copies: " + availableCopies
+              + "\nBorrowed Copies: " + (totalCopies - availableCopies)
+              + "\nActive Loans: " + activeLoans
+              + "\nOverdue Loans: " + overdueLoans;
     }
 }
