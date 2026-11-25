@@ -26,7 +26,7 @@ public class LoginFrame extends JFrame{
 
 
         formPanel.add(new JLabel("Role:"));                formPanel.add(roleBox);
-        formPanel.add(new JLabel("ID / Username:"));       formPanel.add(idField);
+        formPanel.add(new JLabel("ID Number:"));           formPanel.add(idField);
         formPanel.add(new JLabel("Password:"));            formPanel.add(passField);
         formPanel.add(new JLabel(""));                     formPanel.add(loginBtn);
 
