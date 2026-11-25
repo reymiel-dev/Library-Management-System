@@ -15,6 +15,11 @@ public class MemberFrame extends JFrame {
     private final DefaultTableModel browseModel = Theme.model(Theme.ITEM_COLS);
     private final JTable browseTable = Theme.table(browseModel);
     private final JTextField browseSearch = Theme.searchField();
+    private final CardLayout browseCards = new CardLayout();
+    private final JPanel browseViewContainer = new JPanel(browseCards);
+    private final JPanel photoGridPanel = new JPanel(new GridLayout(0, 3, 12, 12));
+    private final JButton toggleViewBtn = Theme.button("List with Photo", Theme.ACCENT);
+    private boolean photoMode = false;
 
     // Borrow / Return
     private final DefaultTableModel borrowModel = Theme.model(Theme.ITEM_COLS);
@@ -83,17 +88,128 @@ public class MemberFrame extends JFrame {
 
     // ================= BROWSE =================
 
+    // ================= BROWSE =================
+
     private JPanel buildBrowseTab() {
         JPanel bar = Theme.toolbar();
         bar.add(new JLabel("Search title, author, ISBN or category:"));
         bar.add(browseSearch);
+        bar.add(toggleViewBtn);
+
+        photoGridPanel.setBackground(Theme.BG);
+        photoGridPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        JScrollPane photoScroll = Theme.scroll(photoGridPanel);
+        photoScroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        browseViewContainer.add(Theme.scroll(browseTable), "LIST");
+        browseViewContainer.add(photoScroll, "PHOTO");
+        browseCards.show(browseViewContainer, "LIST");
+
         Theme.onChange(browseSearch, this::refreshBrowse);
-        return Theme.page(bar, Theme.scroll(browseTable));
+        toggleViewBtn.addActionListener(e -> toggleBrowseView());
+
+        return Theme.page(bar, browseViewContainer);
+    }
+
+    private void toggleBrowseView() {
+        photoMode = !photoMode;
+        if (photoMode) {
+            toggleViewBtn.setText("List View");
+            browseCards.show(browseViewContainer, "PHOTO");
+        } else {
+            toggleViewBtn.setText("List with Photo");
+            browseCards.show(browseViewContainer, "LIST");
+        }
+        refreshBrowse();
     }
 
     private void refreshBrowse() {
         String key = browseSearch.getText().trim();
         fillItems(browseModel, key, false);
+        rebuildPhotoGrid(key);
+    }
+
+    private void rebuildPhotoGrid(String key) {
+        photoGridPanel.removeAll();
+        List<LibraryItem> list = key.isEmpty() ? library.getItems() : library.searchItems(key);
+
+        for (LibraryItem item : list) {
+            photoGridPanel.add(buildPhotoCard(item));
+        }
+
+        photoGridPanel.revalidate();
+        photoGridPanel.repaint();
+    }
+
+    private JPanel buildPhotoCard(LibraryItem item) {
+        JPanel card = new JPanel(new BorderLayout(8, 8));
+        card.setBackground(Theme.CARD);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(0xD5DAE8)),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+
+        JLabel imgLabel = new JLabel("", SwingConstants.CENTER);
+        imgLabel.setPreferredSize(new Dimension(120, 160));
+        imgLabel.setOpaque(true);
+        imgLabel.setBackground(new Color(0xEEF2FA));
+        imgLabel.setFont(Theme.BOLD);
+
+        ImageIcon icon = loadCoverIcon(item.getItemId(), 120, 160);
+        if (icon != null) {
+            imgLabel.setIcon(icon);
+        } else {
+            imgLabel.setText(item.getItemId());
+            imgLabel.setForeground(Theme.PRIMARY);
+        }
+
+        String subtitle = "";
+        if (item instanceof Book) {
+            Book b = (Book) item;
+            subtitle = b.getAuthor() + " • " + b.getCategory();
+        } else if (item instanceof Magazine) {
+            Magazine m = (Magazine) item;
+            subtitle = m.getPublisher() + " • Issue #" + m.getIssueNumber();
+        }
+
+        JPanel info = new JPanel(new GridLayout(0, 1, 2, 2));
+        info.setOpaque(false);
+
+        JLabel titleLbl = new JLabel(item.getTitle());
+        titleLbl.setFont(Theme.BOLD);
+        titleLbl.setForeground(Color.BLACK);
+
+        JLabel subLbl = new JLabel(subtitle);
+        subLbl.setFont(Theme.BODY);
+        subLbl.setForeground(Color.DARK_GRAY);
+
+        JLabel availLbl = new JLabel(item.getItemType() + " (" + item.getYear() + ")  |  Avail: "
+                + item.getAvailableCopies() + "/" + item.getTotalCopies());
+        availLbl.setFont(Theme.BODY);
+        availLbl.setForeground(item.isAvailable() ? Theme.SUCCESS : Theme.DANGER);
+
+        info.add(titleLbl);
+        info.add(subLbl);
+        info.add(availLbl);
+
+        card.add(imgLabel, BorderLayout.NORTH);
+        card.add(info, BorderLayout.CENTER);
+        return card;
+    }
+
+    private ImageIcon loadCoverIcon(String itemId, int w, int h) {
+        String[] extensions = {".jpg", ".jpeg", ".png"};
+        for (String ext : extensions) {
+            java.io.File f = new java.io.File("covers/" + itemId + ext);
+            if (f.exists() && f.isFile()) {
+                ImageIcon raw = new ImageIcon(f.getAbsolutePath());
+                if (raw.getIconWidth() > 0) {
+                    Image scaled = raw.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+                    return new ImageIcon(scaled);
+                }
+            }
+        }
+        return null;
     }
 
     private void fillItems(DefaultTableModel model, String key, boolean availableOnly) {
