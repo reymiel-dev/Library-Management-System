@@ -20,6 +20,9 @@ public class MemberFrame extends JFrame {
     private final JPanel photoGridPanel = new JPanel(new GridLayout(0, 3, 12, 12));
     private final JButton toggleViewBtn = Theme.button("List with Photo", Theme.ACCENT);
     private boolean photoMode = false;
+    private JComboBox<String> sortbox = new JComboBox<>(new String[]{
+        "Title A-Z", "Title Z-A", "Year: Newest", "Year: Oldest"
+    });
 
     // Borrow / Return
     private final DefaultTableModel borrowModel = Theme.model(Theme.ITEM_COLS);
@@ -95,6 +98,8 @@ public class MemberFrame extends JFrame {
         bar.add(new JLabel("Search title, author, ISBN or category:"));
         bar.add(browseSearch);
         bar.add(toggleViewBtn);
+        bar.add(new JLabel("Sort:"));
+        bar.add(sortbox);
 
         photoGridPanel.setBackground(Theme.BG);
         photoGridPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -108,6 +113,7 @@ public class MemberFrame extends JFrame {
 
         Theme.onChange(browseSearch, this::refreshBrowse);
         toggleViewBtn.addActionListener(e -> toggleBrowseView());
+        sortbox.addActionListener(e -> refreshBrowse());
 
         return Theme.page(bar, browseViewContainer);
     }
@@ -124,15 +130,34 @@ public class MemberFrame extends JFrame {
         refreshBrowse();
     }
 
-    private void refreshBrowse() {
-        String key = browseSearch.getText().trim();
-        fillItems(browseModel, key, false);
-        rebuildPhotoGrid(key);
+    private List<LibraryItem> getBrowseList(String key) {
+        List<LibraryItem> list = key.isEmpty() ? library.getItems() : library.searchItems(key);
+        String sort = (String) sortbox.getSelectedItem();
+
+        if("Title A-Z".equals(sort)) {
+            list.sort((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
+        } else if("Title Z-A".equals(sort)) {
+            list.sort((a, b) -> b.getTitle().compareToIgnoreCase(a.getTitle()));
+        } else if("Year: Newest".equals(sort)) {
+            list.sort((a, b) -> b.getYear() - a.getYear());
+        } else if("Year: Oldest".equals(sort)) {
+            list.sort((a, b) -> a.getYear() - b.getYear());
+        }
+        return list;
     }
 
-    private void rebuildPhotoGrid(String key) {
+    private void refreshBrowse() {
+        List<LibraryItem> list = getBrowseList(browseSearch.getText().trim());
+
+        browseModel.setRowCount(0);
+        for (LibraryItem i : list){
+            browseModel.addRow(Theme.itemRow(i));
+        }
+        rebuildPhotoGrid(list);
+    }
+
+    private void rebuildPhotoGrid(List<LibraryItem> list) {
         photoGridPanel.removeAll();
-        List<LibraryItem> list = key.isEmpty() ? library.getItems() : library.searchItems(key);
 
         for (LibraryItem item : list) {
             photoGridPanel.add(buildPhotoCard(item));

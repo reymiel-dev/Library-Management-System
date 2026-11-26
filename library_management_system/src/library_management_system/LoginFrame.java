@@ -14,15 +14,24 @@ public class LoginFrame extends JFrame{
 
         setTitle("Login");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(300, 200);
+        setSize(400, 300);
         setLocationRelativeTo(null);
-        setLayout(new GridLayout(4, 2, 5, 5));
+        setLayout(new GridBagLayout());
 
-        add(new JLabel("Role:"));                add(roleBox);
-        add(new JLabel("ID / Username:"));       add(idField);
-        add(new JLabel("Password:"));            add(passField);
-        add(new JLabel(""));                     add(loginBtn);
+        JPanel formPanel = new JPanel(new GridLayout(4, 2, 10, 19));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder("Library Login"),
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
 
+
+        formPanel.add(new JLabel("Role:"));                formPanel.add(roleBox);
+        formPanel.add(new JLabel("ID Number:"));           formPanel.add(idField);
+        formPanel.add(new JLabel("Password:"));            formPanel.add(passField);
+        formPanel.add(new JLabel(""));                     formPanel.add(loginBtn);
+
+        add(formPanel);
+        getRootPane().setDefaultButton(loginBtn);
         loginBtn.addActionListener(e -> login());
     }
 
